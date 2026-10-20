@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Магазин</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        table { border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 2px solid #414040; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <div style="float: right;">
+        <a href="/logout">Вийти</a>
+    </div>
+    
+    <h2>Список товарів</h2>
+
+    <table>
+        <tr>
+            <th>Назва товару</th>
+            <th>Кількість</th>
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.product_name }}</td>
+            <td>
+                <input type="number" min="0" value="0" class="qty-input" data-id="{{ product.id }}">
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+    <button id="buy-btn">Підтвердити покупку</button>
+    
+    <form action="/history" method="get" style="display: inline;">
+        <button type="submit">Подивитися придбані товари</button>
+    </form>
+
+    
+
+
+
+    <script>
+        document.getElementById('buy-btn').addEventListener('click', () => {
+            let cart = [];
+
+            document.querySelectorAll('.qty-input').forEach(input => {
+                let qty = parseInt(input.value);
+                if (qty > 0) {
+                    cart.push({
+                        product_id: input.getAttribute('data-id'),
+                        quantity: qty
+                    });
+                }
+            });
+
+            if (cart.length === 0) {
+                alert("Оберіть хочаб один товар!");
+                return;
+            }
+
+            fetch('/buy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart: cart })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert('Покупка успішно здійснена!');
+                    document.querySelectorAll('.qty-input').forEach(input => input.value = 0);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
